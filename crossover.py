@@ -83,11 +83,11 @@ def distanceOfTwoCity(l1, l2):
     city1 = locations[l1]
     city2 = locations[l2]
     rad_conv = 2 * np.pi / 360
-    Distance = 6378.8 * np.arccos(
-        (np.sin(city1[1] * rad_conv) * (np.sin(city2[1] * rad_conv)))
+    Distance = 6378.8 * np.arccos((np.sin(city1[1] * rad_conv) * (np.sin(city2[1] * rad_conv)))
         + np.cos(city1[1] * rad_conv)
         * np.cos(city2[1] * rad_conv)
-        * np.cos((city2[0] * rad_conv) - (city1[0] * rad_conv))
+        * np.cos((city2[0] * rad_conv) 
+        - (city1[0] * rad_conv))
     )
     return Distance
 
