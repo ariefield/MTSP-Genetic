@@ -1,8 +1,7 @@
 #%%
 from consts import locations
-from crossover import decode, distanceOfTwoCity, splitGene
+from helpers import function1
 
-# from main import function1
 import itertools
 import sys
 import math
@@ -28,7 +27,7 @@ def brute_force(houses, m):
         for bp_set in breakpoint_sets:
             gene = path + bp_set
             distance = function1(gene, m)
-            # results[tuple(gene)] = distance
+            results[tuple(gene)] = distance
 
             if distance <= best[0]:
                 best = (distance, tuple(gene))
@@ -37,7 +36,7 @@ def brute_force(houses, m):
         f"\nTook {end-start} seconds for {m} salesmen, {len(breakpoint_sets)} breakpoints, and {len(houses)} houses"
     )
 
-    return {"results": results, "best": best}
+    return {"best": best}
 
 
 def generate_breakpoints(indices, x):
@@ -82,21 +81,9 @@ def validate_breakpoints(all_breakpoints, n):
     return breakpoints
 
 
-def function1(x, m):
-    decoded = decode(*splitGene(x, m))
-    decoded.append(0)
-
-    totalDistance = 0.0
-    previousLocation = 0
-
-    # We don't need to prepend 0 because previousLocation starts at 0
-    for location in decoded:
-        totalDistance += distanceOfTwoCity(location, previousLocation)
-        previousLocation = location
-    return totalDistance
-
-
 n = 8
 m = 3
 houses = locations[:n]
 print(brute_force(houses, m))
+# function1([8, 7, 6, 3, 4, 1, 5, 2, 2, 6], m)
+# function1([5, 2, 3, 4, 1, 7, 6, 2, 5], m)

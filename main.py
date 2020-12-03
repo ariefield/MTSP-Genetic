@@ -1,5 +1,8 @@
+#%%
 # Importing required modules
-from crossover import child1, child2, decode, splitGene, distanceOfTwoCity
+from genetic import child1, child2, decode, splitGene, distanceOfTwoCity
+from helpers import function1, function2
+
 import math
 import random
 import matplotlib.pyplot as plt
@@ -43,42 +46,6 @@ def mutation2(parent, m):
 # Description: This is a python implementation of Prof. Kalyanmoy Deb's popular NSGA-II algorithm
 # Author: Haris Ali Khan
 # Supervisor: Prof. Manoj Kumar Tiwari
-
-# First function to optimize. Input is encoded chromasome array and the output is the total distance
-def function1(x, m):
-    decoded = decode(*splitGene(x, m))
-    decoded.append(0)
-
-    totalDistance = 0.0
-    previousLocation = 0
-
-    # We don't need to prepend 0 because previousLocation starts at 0
-    for location in decoded:
-        totalDistance += distanceOfTwoCity(location, previousLocation)
-        previousLocation = location
-
-    return totalDistance
-
-
-# Second function to optimize
-def function2(x, m):
-    decoded = decode(*splitGene(x, m))
-    decoded.append(0)
-
-    # find total distance for every salesman
-    salesmanDistances = []
-    totalDistance = 0
-    prevLocation = 0
-
-    for location in decoded:
-        totalDistance += distanceOfTwoCity(location, prevLocation)
-        prevLocation = location
-        if location == 0:
-            salesmanDistances.append(totalDistance)
-            totalDistance = 0
-
-    return max(salesmanDistances) - min(salesmanDistances)
-
 
 # Function to find index of list
 def index_of(a, list):
@@ -295,11 +262,11 @@ file.write(
 file.close()
 
 # Lets plot the final front now
-function1 = [i for i in function1_values]
-function2 = [j for j in function2_values]
+function1_res = [i for i in function1_values]
+function2_res = [j for j in function2_values]
 fig = plt.figure()
 plt.xlabel("Function 1", fontsize=15)
 plt.ylabel("Function 2", fontsize=15)
-plt.scatter(function1, function2)
+plt.scatter(function1_res, function2_res)
 fig.savefig("./solutions")
 # plt.show()
