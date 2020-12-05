@@ -88,11 +88,9 @@ def generateRandom(n, m):
     return randomPath + randomBreakpoints
 
 
-def main(m, n):
-    print(f"------------- m = {m}, n = {n} -------------")
+def main(m, n, pop_size=20, max_gen=921):
+    print(f"------------- m = {m}, n = {n}, pop = {pop_size} -------------")
     startTime = time.time()
-    pop_size = 20
-    max_gen = 921
 
     # Initialization
     solution = [generateRandom(n, m) for i in range(0, pop_size)]
@@ -196,7 +194,7 @@ def main(m, n):
     fileName = "MTSP.csv"
     file = open(fileName, "a+")
     file.write(
-        f"n: {n}, m: {m}, runtime: {runtime}, # of solutions: {len(function1_res)}, function1: {function1_res[0]}, function2: {function2_res[0]}, best: {bestSolution}\n"
+        f"n: {n}, m: {m}, popSize: {pop_size}, runtime: {runtime}, # of solutions: {len(function1_res)}, function1: {function1_res[0]}, function2: {function2_res[0]}, best: {bestSolution}\n"
     )
     file.close()
 
@@ -213,9 +211,11 @@ def main(m, n):
     fig.savefig("./solutions")
 
 
-n = 10
-for m in range(2, 5):
-    main(m, n)
+n = 20
+m = 3
+gens = 921
+for pop in [20, 30, 40, 50]:
+    main(m, n, pop)
 
 # for n in [60, 100, 120]:
 #     for m in [2, 5, 10, 15, 20]:
