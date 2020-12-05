@@ -1,7 +1,7 @@
 #%%
 # Importing required modules
 from genetic import child1, child2, decode, splitGene, distanceOfTwoCity
-from helpers import function1, function2
+from helpers import function1, function2, fast_non_dominated_sort
 
 import math
 import random
@@ -65,55 +65,6 @@ def sort_by_values(list1, values):
     return sorted_list
 
 
-# Function to carry out NSGA-II's fast non dominated sort
-# We should reverse the greater than signs instead of reversing the list!!!!
-def fast_non_dominated_sort(values1, values2):
-    S = [[] for i in range(0, len(values1))]
-    front = [[]]
-    n = [0 for i in range(0, len(values1))]
-    rank = [0 for i in range(0, len(values1))]
-
-    for p in range(0, len(values1)):
-        S[p] = []
-        n[p] = 0
-        for q in range(0, len(values1)):
-            if (
-                (values1[p] > values1[q] and values2[p] > values2[q])
-                or (values1[p] >= values1[q] and values2[p] > values2[q])
-                or (values1[p] > values1[q] and values2[p] >= values2[q])
-            ):
-                if q not in S[p]:
-                    S[p].append(q)
-            elif (
-                (values1[q] > values1[p] and values2[q] > values2[p])
-                or (values1[q] >= values1[p] and values2[q] > values2[p])
-                or (values1[q] > values1[p] and values2[q] >= values2[p])
-            ):
-                n[p] = n[p] + 1
-        if n[p] == 0:
-            rank[p] = 0
-            if p not in front[0]:
-                front[0].append(p)
-
-    i = 0
-    while front[i] != []:
-        Q = []
-        for p in front[i]:
-            for q in S[p]:
-                n[q] = n[q] - 1
-                if n[q] == 0:
-                    rank[q] = i + 1
-                    if q not in Q:
-                        Q.append(q)
-        i = i + 1
-        front.append(Q)
-
-    del front[len(front) - 1]
-
-    front.reverse()
-    return front
-
-
 # Function to calculate crowding distance
 def crowding_distance(values1, values2, front):
     distance = [0 for i in range(0, len(front))]
@@ -142,14 +93,6 @@ def crossover_git(a, b, m):
         return mutation2(child, m)
 
 
-# Function to carry out the mutation operator
-def mutation(solution):
-    mutation_prob = random.random()
-    if mutation_prob < 1:
-        solution = min_x + (max_x - min_x) * random.random()
-    return solution
-
-
 # Generate random chromosome for population
 def generateRandom(n, m):
     randomPath = random.sample(range(1, n), n - 1)
@@ -160,113 +103,136 @@ def generateRandom(n, m):
     return randomPath + randomBreakpoints
 
 
-# Main program starts here
-startTime = time.time()
-pop_size = 20
-max_gen = 921
-m = 4
-n = 30
+def main(m, n):
+    print(f"------------- m = {m}, n = {n} -------------")
+    startTime = time.time()
+    pop_size = 20
+    max_gen = 921
 
-# Initialization
-min_x = 0
-max_x = 9
-solution = [generateRandom(n, m) for i in range(0, pop_size)]
-# print(solution)
+    # Initialization
+    solution = [generateRandom(n, m) for i in range(0, pop_size)]
 
-gen_no = 0
-while gen_no < max_gen:
-    function1_values = [function1(solution[i], m) for i in range(0, pop_size)]
-    function2_values = [function2(solution[i], m) for i in range(0, pop_size)]
-    # print(function1_values)
-    # print(function2_values)
-    non_dominated_sorted_solution = fast_non_dominated_sort(
-        function1_values[:], function2_values[:]
-    )
-    # print(non_dominated_sorted_solution)
-
-    # print("The best front for Generation number ",gen_no, " is")
-    # for valuez in non_dominated_sorted_solution[0]:
-    #     print(solution[valuez],end=" ")
-    #     print("\n")
-    bestSolution = [solution[i] for i in non_dominated_sorted_solution[0]]
-    crowding_distance_values = []
-    for i in range(0, len(non_dominated_sorted_solution)):
-        crowding_distance_values.append(
-            crowding_distance(
-                function1_values[:],
-                function2_values[:],
-                non_dominated_sorted_solution[i][:],
-            )
+    gen_no = 0
+    while gen_no < max_gen:
+        function1_values = [function1(solution[i], m) for i in range(0, pop_size)]
+        function2_values = [function2(solution[i], m) for i in range(0, pop_size)]
+        non_dominated_sorted_solution = fast_non_dominated_sort(
+            function1_values[:], function2_values[:]
         )
-    solution2 = solution[:]
-    # Generating offsprings
-    while len(solution2) != 2 * pop_size:
-        a1 = random.randint(0, pop_size - 1)
-        b1 = random.randint(0, pop_size - 1)
-        solution2.append(crossover_git(solution[a1], solution[b1], m))
-    function1_values2 = [function1(solution2[i], m) for i in range(0, 2 * pop_size)]
-    function2_values2 = [function2(solution2[i], m) for i in range(0, 2 * pop_size)]
-    non_dominated_sorted_solution2 = fast_non_dominated_sort(
-        function1_values2[:], function2_values2[:]
-    )
-    crowding_distance_values2 = []
-    for i in range(0, len(non_dominated_sorted_solution2)):
-        crowding_distance_values2.append(
-            crowding_distance(
-                function1_values2[:],
-                function2_values2[:],
-                non_dominated_sorted_solution2[i][:],
+        bestSolution = [solution[i] for i in non_dominated_sorted_solution[0]]
+        crowding_distance_values = []
+        for i in range(0, len(non_dominated_sorted_solution)):
+            crowding_distance_values.append(
+                crowding_distance(
+                    function1_values[:],
+                    function2_values[:],
+                    non_dominated_sorted_solution[i][:],
+                )
             )
+        solution2 = solution[:]
+        # Generating offsprings
+        while len(solution2) != 2 * pop_size:
+            a1 = random.randint(0, pop_size - 1)
+            b1 = random.randint(0, pop_size - 1)
+            solution2.append(crossover_git(solution[a1], solution[b1], m))
+        function1_values2 = [function1(solution2[i], m) for i in range(0, 2 * pop_size)]
+        function2_values2 = [function2(solution2[i], m) for i in range(0, 2 * pop_size)]
+        non_dominated_sorted_solution2 = fast_non_dominated_sort(
+            function1_values2[:], function2_values2[:]
         )
-    new_solution = []
-    for i in range(0, len(non_dominated_sorted_solution2)):
-        non_dominated_sorted_solution2_1 = [
-            index_of(
-                non_dominated_sorted_solution2[i][j], non_dominated_sorted_solution2[i]
+        crowding_distance_values2 = []
+        for i in range(0, len(non_dominated_sorted_solution2)):
+            crowding_distance_values2.append(
+                crowding_distance(
+                    function1_values2[:],
+                    function2_values2[:],
+                    non_dominated_sorted_solution2[i][:],
+                )
             )
-            for j in range(0, len(non_dominated_sorted_solution2[i]))
-        ]
-        front22 = sort_by_values(
-            non_dominated_sorted_solution2_1[:], crowding_distance_values2[i][:]
-        )
-        front = [
-            non_dominated_sorted_solution2[i][front22[j]]
-            for j in range(0, len(non_dominated_sorted_solution2[i]))
-        ]
-        front.reverse()
-        for value in front:
-            new_solution.append(value)
+        new_solution = []
+        for i in range(0, len(non_dominated_sorted_solution2)):
+            non_dominated_sorted_solution2_1 = [
+                index_of(
+                    non_dominated_sorted_solution2[i][j],
+                    non_dominated_sorted_solution2[i],
+                )
+                for j in range(0, len(non_dominated_sorted_solution2[i]))
+            ]
+            front22 = sort_by_values(
+                non_dominated_sorted_solution2_1[:], crowding_distance_values2[i][:]
+            )
+            front = [
+                non_dominated_sorted_solution2[i][front22[j]]
+                for j in range(0, len(non_dominated_sorted_solution2[i]))
+            ]
+            front.reverse()
+            for value in front:
+                new_solution.append(value)
+                if len(new_solution) == pop_size:
+                    break
             if len(new_solution) == pop_size:
                 break
-        if len(new_solution) == pop_size:
-            break
-    solution = [solution2[i] for i in new_solution]
-    gen_no = gen_no + 1
+        solution = [solution2[i] for i in new_solution]
+        gen_no = gen_no + 1
 
-endTime = time.time()
+    endTime = time.time()
 
-print("The best front for Generation number ", gen_no, " is")
-print(bestSolution)
+    print(f"The best path(s) for Generation number {gen_no} is:")
+    print(bestSolution)
 
-function1_values = [function1(bestSolution[i], m) for i in range(0, len(bestSolution))]
-function2_values = [function2(bestSolution[i], m) for i in range(0, len(bestSolution))]
+    function1_values = [
+        function1(bestSolution[i], m) for i in range(0, len(bestSolution))
+    ]
+    function2_values = [
+        function2(bestSolution[i], m) for i in range(0, len(bestSolution))
+    ]
 
-runtime = endTime - startTime
-print(runtime)
+    runtime = endTime - startTime
+    print(f"Runtime: {runtime}")
 
-fileName = "MTSP-Timings.csv"
-file = open(fileName, "a+")
-file.write(
-    str(runtime) + "," + str(n) + "," + str(m) + "," + str(bestSolution) + "," + "\n"
-)  # write data with a newline
-file.close()
+    fileName = "MTSP-Timings.csv"
+    file = open(fileName, "a+")
+    file.write(
+        str(runtime)
+        + ","
+        + str(n)
+        + ","
+        + str(m)
+        + ","
+        + str(bestSolution)
+        + ","
+        + "\n"
+    )  # write data with a newline
+    file.close()
 
-# Lets plot the final front now
-function1_res = [i for i in function1_values]
-function2_res = [j for j in function2_values]
-fig = plt.figure()
-plt.xlabel("Function 1", fontsize=15)
-plt.ylabel("Function 2", fontsize=15)
-plt.scatter(function1_res, function2_res)
-fig.savefig("./solutions")
-# plt.show()
+    function1_res = [i for i in function1_values]
+    function2_res = [j for j in function2_values]
+
+    fileName = "MTSP.csv"
+    file = open(fileName, "a+")
+    file.write(
+        f"n: {n}, m: {m}, runtime: {runtime}, # of solutions: {len(function1_res)}, function1: {function1_res[0]}, function2: {function2_res[0]}, best: {bestSolution}\n"
+    )
+    file.close()
+
+    print(f"Number of solutions: {len(function1_res)}")
+    print(f"function1: {function1_res[0]}")
+    print(f"function2: {function2_res[0]}")
+    print()
+
+    # Lets plot the final front now
+    # fig = plt.figure()
+    # plt.xlabel("Function 1", fontsize=15)
+    # plt.ylabel("Function 2", fontsize=15)
+    # plt.scatter(function1_res, function2_res)
+    # fig.savefig("./solutions")
+    # # plt.show()
+
+
+# for n in [9, 10, 11, 20, 30]:
+#     for m in range(2, 4):
+#         main(m, n)
+
+for n in [60, 100, 120]:
+    for m in [2, 5, 10, 15, 20]:
+        main(m, n)

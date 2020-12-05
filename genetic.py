@@ -93,6 +93,8 @@ def distanceOfTwoCity(l1, l2):
 
 
 def splitGene(gene, m):
+    if m == 1:
+        return (gene, [])
     path = gene[: -(m - 1)]
     breakpoints = gene[len(gene) - (m - 1) :]
     return (path, breakpoints)

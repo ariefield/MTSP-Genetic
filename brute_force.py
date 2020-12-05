@@ -1,6 +1,6 @@
 #%%
 from consts import locations
-from helpers import function1
+from helpers import function1, function2, fast_non_dominated_sort
 
 import itertools
 import sys
@@ -9,34 +9,35 @@ import time
 
 # houses: house locations in lat/lon
 # m: number of salesmen
-# n: number of cities
+# n: number of cities (including depot)
 def brute_force(houses, m):
+    print(
+        f"---------------------------- {m} salesmen, and {len(houses)} houses (m = {3}, n = {len(houses)}) ----------------------------"
+    )
     a = list(range(1, len(houses)))
 
     breakpoint_sets = generate_breakpoints(a, m - 1)
     print(f"breakpoints: {breakpoint_sets}")
 
     paths = itertools.permutations(a)
-    print(f"# of permutations: {math.factorial(len(houses))}")
+    print(f"# of permutations: {math.factorial(len(houses)-1)}")
 
-    results = {}
-    best = (sys.maxsize, None)
+    solutions = []
+    function1_values = []
+    function2_values = []
     start = time.time()
-    for i, path in enumerate(paths):
+    for path in paths:
         path = list(path)
         for bp_set in breakpoint_sets:
             gene = path + bp_set
-            distance = function1(gene, m)
-            results[tuple(gene)] = distance
+            solutions.append(gene)
+            function1_values.append((function1(gene, m), gene))
+            function2_values.append((function2(gene, m), gene))
 
-            if distance <= best[0]:
-                best = (distance, tuple(gene))
     end = time.time()
-    print(
-        f"\nTook {end-start} seconds for {m} salesmen, {len(breakpoint_sets)} breakpoints, and {len(houses)} houses"
-    )
+    print(f"Main loop took {end-start} seconds")
 
-    return {"best": best}
+    return (function1_values, function2_values)
 
 
 def generate_breakpoints(indices, x):
@@ -81,9 +82,31 @@ def validate_breakpoints(all_breakpoints, n):
     return breakpoints
 
 
-n = 8
-m = 3
-houses = locations[:n]
-print(brute_force(houses, m))
-# function1([8, 7, 6, 3, 4, 1, 5, 2, 2, 6], m)
-# function1([5, 2, 3, 4, 1, 7, 6, 2, 5], m)
+# Run multiple
+for n in range(4, 15):
+    for m in range(1, 5):
+        if m * 2 + 1 > n:
+            break
+        houses = locations[:n]
+        f1, f2 = brute_force(houses, m)
+        f1.sort()
+        f2.sort()
+        print(
+            f"Best function1 - {f1[0][1]} f1: {f1[0][0]}  f2: {function2(f1[0][1], m)}"
+        )
+        print(
+            f"Best function2 - {f2[0][1]} f1: {function1(f2[0][1], m)} f2: {f2[0][0]}"
+        )
+        print(f"Top 5 function 1 - {list(f1[x][1] for x in range(5))}")
+        print(f"Top 5 function 2 - {list(f2[x][1] for x in range(5))}")
+        print(
+            f"Worst function1 - {f1[-1][1]} f1: {f1[-1][0]}  f2: {function2(f1[-1][1], m)}"
+        )
+        print(
+            f"Worst function2 - {f2[-1][1]} f1: {function1(f2[-1][1], m)} f2: {f2[-1][0]}"
+        )
+        print(
+            "------------------------------------------------------------------------------------------------"
+        )
+        print()
+        print()
