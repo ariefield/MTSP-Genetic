@@ -1,4 +1,5 @@
-#%%
+# Description: This is a python implementation of Prof. Kalyanmoy Deb's popular NSGA-II algorithm - adapated from Haris Ali Khan's implementation available at https://github.com/haris989/NSGA-II
+
 # Importing required modules
 from genetic import child1, child2, decode, splitGene, distanceOfTwoCity
 from helpers import function1, function2, fast_non_dominated_sort
@@ -10,42 +11,26 @@ import time
 
 
 def mutation1(parent, m):
-    # mutation_prob = random.random()
-    # if mutation_prob <0.5:
     n = len(parent)
     j = random.randint(1, n - (m - 1) - 1)  # m-1 split points
     i = random.randint(0, j - 1)
-    # print(i,j)
-    # part 1 (0,i) part 2 (i,j) part 3(j,n) reverse part 2 only
     result = parent[0:i] + parent[i:j][::-1] + parent[j : n - (m - 1)]
 
     randomBreakpoints = [
         i + x for i, x in enumerate(sorted(random.sample(range(2, n - 3), m - 1)))
     ]
-    # print(parent[0:i],parent[i:j][::-1],parent[j:n-(m-1)])
     return result + randomBreakpoints
-
-
-# return parent
 
 
 def mutation2(parent, m):
     n = len(parent)
     j = random.randint(1, n - (m - 1) - 1)
     i = random.randint(0, j - 1)
-    # print(i,j)
-    # part 1 (0,i) part 2 (i,j) part 3(j,n) restitch as part 2,1,3
     result = parent[i:j] + parent[0:i] + parent[j : n - (m - 1)]
     splits = random.sample(range(1, n - m), m - 1)
-    # print(splits)
+
     return result + splits
 
-    # Program Name: NSGA-II.py
-
-
-# Description: This is a python implementation of Prof. Kalyanmoy Deb's popular NSGA-II algorithm
-# Author: Haris Ali Khan
-# Supervisor: Prof. Manoj Kumar Tiwari
 
 # Function to find index of list
 def index_of(a, list):
@@ -221,18 +206,17 @@ def main(m, n):
     print()
 
     # Lets plot the final front now
-    # fig = plt.figure()
-    # plt.xlabel("Function 1", fontsize=15)
-    # plt.ylabel("Function 2", fontsize=15)
-    # plt.scatter(function1_res, function2_res)
-    # fig.savefig("./solutions")
-    # # plt.show()
+    fig = plt.figure()
+    plt.xlabel("Function 1", fontsize=15)
+    plt.ylabel("Function 2", fontsize=15)
+    plt.scatter(function1_res, function2_res)
+    fig.savefig("./solutions")
 
 
-# for n in [9, 10, 11, 20, 30]:
-#     for m in range(2, 4):
+n = 10
+for m in range(2, 5):
+    main(m, n)
+
+# for n in [60, 100, 120]:
+#     for m in [2, 5, 10, 15, 20]:
 #         main(m, n)
-
-for n in [60, 100, 120]:
-    for m in [2, 5, 10, 15, 20]:
-        main(m, n)
